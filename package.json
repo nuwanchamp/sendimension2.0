@@ -1,0 +1,28 @@
+{
+  "name": "nodejs-webapp",
+  "version": "0.0.0",
+  "description": "nodejs-webapp",
+  "main": "server.js",
+  "author": {
+    "name": "Nu-one"
+  },
+  "scripts": {
+    "devStart": "nodemon ./server.js"
+  },
+  "dependencies": {
+    "applicationinsights": "^1.0.0",
+    "natives": "^1.1.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "express-group-routes": "^1.1.0",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
+    "mongodb": "^4.4.1",
+    "mongoose": "^6.2.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
