@@ -4,7 +4,7 @@ const { ObjectId } = require("mongodb");
 require("express-group-routes");
 var objectId = require("mongodb").ObjectId;
 var jwt = require('jsonwebtoken');
-var moment = require("moment");
+var moment = require('moment-timezone');
 
 
 const User = require("../services/user.service");
@@ -41,9 +41,9 @@ attendanceRoute.group('/attendance/', (router) => {
         try {
             const att = new Attendance();
             att.emp_id = req.params.userId;
-            att.date = moment().format("YYYY-MM-DD");
-            att.time = moment().format("HH:mm:ss");
-            att.tstamp = moment().unix();
+            att.date = moment().tz("Asia/Colombo").format("YYYY-MM-DD");
+            att.time = moment().tz("Asia/Colombo").format("HH:mm:ss");
+            att.tstamp = moment().tz("Asia/Colombo").unix();
             att.type = "check-in"
             let error = att.validateSync();
             if (error) {
@@ -78,9 +78,9 @@ attendanceRoute.group('/attendance/', (router) => {
         try {
             const att = new Attendance();
             att.emp_id = req.params.userId;
-            att.date = moment().format('YYYY-MM-DD');
-            att.time = moment().format("HH:mm:ss");
-            att.tstamp = moment().unix();
+            att.date = moment().tz("Asia/Colombo").format('YYYY-MM-DD');
+            att.time = moment().tz("Asia/Colombo").format("HH:mm:ss");
+            att.tstamp = moment().tz("Asia/Colombo").unix();
             att.type = "check-out"
             let error = att.validateSync();
             if (error) {
@@ -144,17 +144,45 @@ attendanceRoute.group('/attendance/', (router) => {
     router.get("/", async function (req, res) {
         try {
             let filters = req.body.filters;
-            let perPage = req.body.perPage || 10;
-            let sortBy = req.body.sortBy || "date";
-            let sortOrder = req.body.sortOrder || 1;
-            let page = req.body.page - 1 || 0;
+            let perPage = req.query.perPage || 10;
+            let sortBy = req.query.sortBy || "tstamp";
+            let sortOrder = req.query.sortOrder || 1;
+            let page = req.query.page || 0;
             var sort = {}
             sort[sortBy] = parseInt(sortOrder); // Cannot use sort directly in mongoose, might be a bug
             const attendance = await Attendance.find(filters).limit(perPage).skip(perPage * page).sort(sort).exec();
             const count = Object.keys(attendance).length;
             res.json({
                 "message": count == 0 ? "No Attendance found" : `${count} attendance/s found`,
-                "page": page,
+                "page": page + 1,
+                "perpage": perPage,
+                "sortBy": sortBy,
+                "sortOrder": sortOrder,
+                "resultCount": count,
+                "data": attendance
+            });
+        } catch (e) {
+            res.status(500).send({
+                message: "Something terrible happened. Please contact support",
+                statusCode: 500,
+                data: []
+            })
+        }
+    });
+    router.post("/search", async function (req, res) {
+        try {
+            let filters = req.body.filters;
+            let perPage = req.body.perPage || 10;
+            let sortBy = req.body.sortBy || "tstamp";
+            let sortOrder = req.body.sortOrder || 1;
+            let page = req.body.page || 0;
+            var sort = {}
+            sort[sortBy] = parseInt(sortOrder); // Cannot use sort directly in mongoose, might be a bug
+            const attendance = await Attendance.find(filters).limit(perPage).skip(perPage * page).sort(sort).exec();
+            const count = Object.keys(attendance).length;
+            res.json({
+                "message": count == 0 ? "No Attendance found" : `${count} attendance/s found`,
+                "page": page + 1,
                 "perpage": perPage,
                 "sortBy": sortBy,
                 "sortOrder": sortOrder,
